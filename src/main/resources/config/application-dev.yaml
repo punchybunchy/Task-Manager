@@ -2,15 +2,15 @@ server:
   error:
     include-stacktrace: on_param
 
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
+#springdoc:
+#  swagger-ui:
+#    path: /swagger-ui.html
 
 spring:
   datasource:
     username: ""
     password: ""
-    url: "jdbc:h2:./taskManager"
+    url: jdbc:h2:./taskManager
 
   jpa:
     show-sql: true
@@ -20,7 +20,6 @@ spring:
   h2:
     console:
       enabled: true
-      # Указываем путь, по которому будет открываться консоль
       path: /h2console/
       settings:
         web-allow-others: true

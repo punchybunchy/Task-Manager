@@ -37,17 +37,19 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
 	implementation(
-			'org.springframework.boot:spring-boot-starter-data-jpa',
 			'org.springframework.boot:spring-boot-starter-web',
+			'org.springframework.boot:spring-boot-starter-data-jpa',
 			'org.springframework.boot:spring-boot-starter-actuator',
-			'org.springframework.boot:spring-boot-starter-validation',
 			'org.springframework.boot:spring-boot-starter-security',
-			'io.jsonwebtoken:jjwt:0.9.1',
-			'org.springdoc:springdoc-openapi-ui:1.5.12',
-			'org.liquibase:liquibase-core:4.6.1',
-			'com.querydsl:querydsl-core:5.0.0',
+			'org.springframework.boot:spring-boot-starter-validation',
+
 			'com.querydsl:querydsl-jpa:5.0.0',
-			'com.rollbar:rollbar-spring-boot-webmvc:1.8.1',
+			'com.querydsl:querydsl-core:5.0.0',
+			'org.liquibase:liquibase-core:4.19.0',
+			'org.springdoc:springdoc-openapi-ui:1.5.12',
+			'com.rollbar:rollbar-spring-boot-webmvc:1.9.0',
+
+			'io.jsonwebtoken:jjwt:0.9.1'
 	)
 
 	liquibaseRuntime(
@@ -86,14 +88,16 @@ liquibase {
 		main {
 			// Указываем путь, по которому будет сгенерирован файл миграции
 			changeLogFile 'src/main/resources/db/changelog/changelog-master.xml'
-			// Указывем источник, с которым будут сравниваться изменения
+			// Указываем источник, с которым будут сравниваться изменения
 			// Это база данных, изначально она пустая
 			url 'jdbc:h2:./taskManager'
 			// Имя пользователя и пароль для подключения к базе
 			username ''
 			password ''
-			// Сравниваем с моделями, задавая пакет
-			referenceUrl 'hibernate:spring:io.hexlet.javaspringblog.model.' +
+			// Указываем, откуда мы будем брать изменения
+			// Это модели
+			// Указываем пакет, в котором расположены модели
+			referenceUrl 'hibernate:spring:hexlet.code.app.model' +
 					// Указываем диалект
 					'?dialect=org.hibernate.dialect.H2Dialect' +
 					// Указываем правила именования таблиц и столбцов,
