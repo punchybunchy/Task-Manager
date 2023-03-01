@@ -1,0 +1,21 @@
+spring:
+#  profiles: prod
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
+    datasource:
+      url: "postgresql://${{ PGUSER }}:${{ PGPASSWORD }}@${{ PGHOST }}:${{ PGPORT }}/${{ PGDATABASE }}"
+
+    jpa:
+      show-sql: false
+
+server:
+  error:
+    include-stacktrace: never
+
+logging:
+  level:
+    ROOT: INFO

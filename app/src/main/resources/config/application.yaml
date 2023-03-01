@@ -1,0 +1,21 @@
+
+#  profiles:
+#    active: "prod"
+
+server:
+  port: ${PORT:5000}
+
+base-url: /api
+
+spring:
+  application:
+    name: taskManager
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.xml
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
