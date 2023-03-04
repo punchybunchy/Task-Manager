@@ -1,0 +1,27 @@
+base-url: ""
+
+spring:
+  application:
+    name: taskManager
+
+  jpa:
+    show-sql: true
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.xml
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+
+#  datasource:
+#    # В тестах спользуем базу данных Н2 в памяти
+#    url: jdbc:h2:mem:db
+#    username: sa
+#    password:
+
+logging:
+  level:
+    root: INFO

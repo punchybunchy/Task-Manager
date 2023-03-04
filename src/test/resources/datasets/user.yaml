@@ -1,0 +1,5 @@
+user:
+  - email: ivan@google.com
+    firstName: Ivan
+    lastName: Petrov
+    password: password
