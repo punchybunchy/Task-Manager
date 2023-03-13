@@ -31,10 +31,6 @@ public class UserDtoRequest {
     @Size(min = 3, max = 100)
     private String password;
 
-//    @NotBlank
-//    private Date createdAt;
-
-
     public UserDtoRequest(String email, String firstName, String lastName, String password) {
         this.email = email;
         this.firstName = firstName;

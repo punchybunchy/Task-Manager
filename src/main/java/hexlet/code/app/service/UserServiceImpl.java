@@ -6,25 +6,30 @@ import hexlet.code.app.exceptionsHandler.UserNotFoundException;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.service.interfaces.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static hexlet.code.app.config.security.WebSecurityConfig.DEFAULT_AUTHORITIES;
+
 
 @Service
+@AllArgsConstructor
+@Transactional
 public class UserServiceImpl implements UserService, UserDetailsService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+
+    private final UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDtoResponse getUserById(long id) {
@@ -60,6 +65,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setEmail(userDtoRequest.getEmail());
         user.setFirstName(userDtoRequest.getFirstName());
         user.setLastName(userDtoRequest.getLastName());
+        String password = userDtoRequest.getPassword();
         user.setPassword(passwordEncoder.encode(userDtoRequest.getPassword()));
         userRepository.save(user);
 
@@ -81,8 +87,15 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setEmail(userDtoRequest.getEmail());
         user.setFirstName(userDtoRequest.getFirstName());
         user.setLastName(userDtoRequest.getLastName());
+        String password = userDtoRequest.getPassword();
         user.setPassword(passwordEncoder.encode(userDtoRequest.getPassword()));
         userRepository.save(user);
+
+        String email = user.getEmail();
+        String firstName = user.getFirstName();
+        String lasttName = user.getLastName();
+        Date date = user.getCreatedAt();
+        String passwordUser = user.getPassword();
 
         return new UserDtoResponse(
                 id,
@@ -102,13 +115,17 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(final String username) throws UsernameNotFoundException {
-        List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("user"));
+        return userRepository.findByEmail(username)
+                .map(this::buildSpringUser)
+                .orElseThrow(() -> new UsernameNotFoundException("Not found user with 'username': " + username));
+    }
 
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UserNotFoundException("Not found user with 'username': " + username));
-
+    private UserDetails buildSpringUser(final User user) {
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(), user.getPassword(), authorities);
+                user.getEmail(),
+                user.getPassword(),
+                DEFAULT_AUTHORITIES
+        );
     }
 
 }
