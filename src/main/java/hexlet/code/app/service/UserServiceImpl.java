@@ -1,7 +1,6 @@
 package hexlet.code.app.service;
 
-import hexlet.code.app.dto.UserDtoRequest;
-import hexlet.code.app.dto.UserDtoResponse;
+import hexlet.code.app.dto.UserDto;
 import hexlet.code.app.exceptionsHandler.UserNotFoundException;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
@@ -15,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,78 +30,43 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDtoResponse getUserById(long id) {
-        User user = userRepository.findById(id)
+    public User getUserById(long id) {
+        return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found. Invalid user ID: " + id));
-        return new UserDtoResponse(
-                id,
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getCreatedAt()
-        );
     }
 
     @Override
-    public List<UserDtoResponse> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream()
-                .map(user -> {
-                    return new UserDtoResponse(
-                            user.getId(),
-                            user.getEmail(),
-                            user.getFirstName(),
-                            user.getLastName(),
-                            user.getCreatedAt()
-                    );
-                }).collect(Collectors.toList());
+    public List<User> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .collect(Collectors.toList());
     }
 
     @Override
-    public UserDtoResponse createUser(UserDtoRequest userDtoRequest) {
+    public User createUser(UserDto userDto) {
         final User user = new User();
-        user.setEmail(userDtoRequest.getEmail());
-        user.setFirstName(userDtoRequest.getFirstName());
-        user.setLastName(userDtoRequest.getLastName());
-        String password = userDtoRequest.getPassword();
-        user.setPassword(passwordEncoder.encode(userDtoRequest.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        String password = userDto.getPassword();
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         userRepository.save(user);
 
-        long id = user.getId();
-        Date createdAt = user.getCreatedAt();
-        return new UserDtoResponse(
-                id,
-                userDtoRequest.getEmail(),
-                userDtoRequest.getFirstName(),
-                userDtoRequest.getLastName(),
-                createdAt
-        );
+        return user;
     }
 
     @Override
-    public UserDtoResponse updateUser(UserDtoRequest userDtoRequest, long id) {
+    public User updateUser(UserDto userDto, long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found. Invalid user ID: " + id));
-        user.setEmail(userDtoRequest.getEmail());
-        user.setFirstName(userDtoRequest.getFirstName());
-        user.setLastName(userDtoRequest.getLastName());
-        String password = userDtoRequest.getPassword();
-        user.setPassword(passwordEncoder.encode(userDtoRequest.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setFirstName(userDto.getFirstName());
+        user.setLastName(userDto.getLastName());
+        String password = userDto.getPassword();
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         userRepository.save(user);
 
-        String email = user.getEmail();
-        String firstName = user.getFirstName();
-        String lasttName = user.getLastName();
-        Date date = user.getCreatedAt();
-        String passwordUser = user.getPassword();
-
-        return new UserDtoResponse(
-                id,
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getCreatedAt()
-        );
+        return user;
     }
 
     @Override

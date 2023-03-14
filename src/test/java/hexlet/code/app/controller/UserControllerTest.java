@@ -2,25 +2,19 @@ package hexlet.code.app.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.app.config.SpringConfigForIT;
-import hexlet.code.app.dto.UserDtoRequest;
-import hexlet.code.app.dto.UserDtoResponse;
+import hexlet.code.app.dto.UserDto;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
 import hexlet.code.app.utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
-
-import org.springframework.http.MediaType;
 
 import java.util.List;
 
@@ -137,7 +131,7 @@ public class UserControllerTest {
 
         final Long userId = userRepository.findByEmail(TEST_USERNAME).get().getId();
 
-        final var userDto = new UserDtoRequest(TEST_USERNAME_2, "new name", "new last name", "new pwd");
+        final var userDto = new UserDto(TEST_USERNAME_2, "new name", "new last name", "new pwd");
 
         final var updateRequest = put(USER_CONTROLLER_PATH + ID, userId)
                 .content(asJson(userDto))
@@ -166,7 +160,7 @@ public class UserControllerTest {
     @Test
     public void deleteUserFails() throws Exception {
         utils.regDefaultUser();
-        utils.regUser(new UserDtoRequest(
+        utils.regUser(new UserDto(
                 TEST_USERNAME_2,
                 "fname",
                 "lname",

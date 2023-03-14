@@ -1,7 +1,7 @@
 package hexlet.code.app.utils;
 
 
-import hexlet.code.app.dto.UserDtoRequest;
+import hexlet.code.app.dto.UserDto;
 import hexlet.code.app.exceptionsHandler.UserNotFoundException;
 import hexlet.code.app.model.User;
 import hexlet.code.app.repository.UserRepository;
@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -31,9 +30,9 @@ public class TestUtils {
     private final String lastName = "Petrov";
     private final String password = "password";
 
-    private final UserDtoRequest testRegistrationDto = new UserDtoRequest(email,firstName, lastName, password);
+    private final UserDto testRegistrationDto = new UserDto(email,firstName, lastName, password);
 
-    public UserDtoRequest getTestRegistrationDto() {
+    public UserDto getTestRegistrationDto() {
         return testRegistrationDto;
     }
 
@@ -56,7 +55,7 @@ public class TestUtils {
         return regUser(testRegistrationDto);
     }
 
-    public ResultActions regUser(final UserDtoRequest dto) throws Exception {
+    public ResultActions regUser(final UserDto dto) throws Exception {
         final var request = post(USER_CONTROLLER_PATH)
                 .content(asJson(dto))
                 .contentType(APPLICATION_JSON);
