@@ -18,4 +18,16 @@
     <changeSet author="artyomlosev (generated)" id="1677668666383-3">
         <addUniqueConstraint columnNames="email" constraintName="UC_USERSEMAIL_COL" tableName="users"/>
     </changeSet>
+    <changeSet author="artyomlosev (generated)" id="1678871377756-2">
+        <createTable tableName="statuses">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="statusesPK"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="name" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="artyomlosev (generated)" id="1678871377756-3">
+        <addUniqueConstraint columnNames="name" constraintName="UC_STATUSESNAME_COL" tableName="statuses"/>
+    </changeSet>
 </databaseChangeLog>

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static hexlet.code.app.config.security.WebSecurityConfig.DEFAULT_AUTHORITIES;
 
@@ -37,9 +36,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public List<User> getAllUsers() {
-        return userRepository.findAll()
-                .stream()
-                .collect(Collectors.toList());
+        return userRepository.findAll();
     }
 
     @Override
@@ -48,7 +45,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
-        String password = userDto.getPassword();
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         userRepository.save(user);
 
@@ -57,7 +53,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User updateUser(UserDto userDto, long id) {
-        User user = userRepository.findById(id)
+        final User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found. Invalid user ID: " + id));
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
@@ -71,7 +67,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void deleteUser(long id) {
-        User user = userRepository.findById(id)
+        final User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found. Invalid user ID: " + id));
         userRepository.delete(user);
     }

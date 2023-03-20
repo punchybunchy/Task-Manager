@@ -23,7 +23,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RequestMapping("${base-url}" + USER_CONTROLLER_PATH)
 public class UserController {
     public static final String USER_CONTROLLER_PATH = "/users";
-    private static final String USER_AUTHORIZE_CONDITION = """
+    private static final String AUTHORIZED_USERS_ONLY = """
         @userRepository.findById(#id).get().getEmail() == authentication.getName()
         """;
 
@@ -55,7 +55,7 @@ public class UserController {
     }
 
     @PutMapping(path = ID)
-    @PreAuthorize(USER_AUTHORIZE_CONDITION)
+    @PreAuthorize(AUTHORIZED_USERS_ONLY)
     public User updateUser(
             @RequestBody @Valid UserDto userDto,
             @PathVariable long id) {
@@ -63,7 +63,7 @@ public class UserController {
     }
 
     @DeleteMapping(path = ID)
-    @PreAuthorize(USER_AUTHORIZE_CONDITION)
+    @PreAuthorize(AUTHORIZED_USERS_ONLY)
     public void deleteUser(@PathVariable long id) {
         userService.deleteUser(id);
     }
