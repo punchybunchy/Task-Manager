@@ -4,8 +4,8 @@ server:
 base-url: /api
 
 spring:
-  active:
-    profiles: dev
+#  active:
+#    profiles: dev
 
   application:
     name: taskManager
