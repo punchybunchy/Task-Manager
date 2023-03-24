@@ -1,6 +1,11 @@
 package hexlet.code.model;
 
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
@@ -9,18 +14,18 @@ import javax.validation.constraints.NotBlank;
 import java.util.Date;
 import java.util.Set;
 
-import static javax.persistence.GenerationType.AUTO;
 import static javax.persistence.GenerationType.IDENTITY;
 import static javax.persistence.TemporalType.TIMESTAMP;
 
 @Entity
 @Getter
 @Setter
-@Table(name = "tasks")
+@Table(name = "labels")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Task {
+public class Label {
+
     @Id
     @GeneratedValue(strategy = IDENTITY)
     private Long id;
@@ -28,28 +33,20 @@ public class Task {
     @NotBlank
     private String name;
 
-    private String description;
-
-    @ManyToOne
-    @JoinColumn(name = "taskStatus_id", nullable = false)
-    private TaskStatus taskStatus;
-
-    @ManyToOne
-    @JoinColumn(name = "author_id", nullable=false)
-    private User author;
-
-    @ManyToOne
-    @JoinColumn(name = "executor_id")
-    private User executor;
-
     @CreationTimestamp
     @Temporal(TIMESTAMP)
     private Date createdAt;
 
+    @JsonIgnore
     @ManyToMany
-    private Set<Label> labels;
+    @JoinTable(
+            name = "task_label",
+            joinColumns = @JoinColumn(name = "label_id"),
+            inverseJoinColumns = @JoinColumn(name = "task_id"))
+    private Set<Task> labeledTasks;
 
-    public Task (final Long id) {
+    public Label(final Long id) {
         this.id = id;
     }
+
 }

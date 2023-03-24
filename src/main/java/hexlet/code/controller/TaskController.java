@@ -33,7 +33,7 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    @Operation(summary = "Get user by id")
+    @Operation(summary = "Get task by id")
     @ApiResponses(@ApiResponse(responseCode = "200"))
     @GetMapping(path = ID)
     public Task getTask(@PathVariable Long id) {

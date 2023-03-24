@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import java.util.Map;
 
+import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskStatusController.STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
@@ -62,6 +63,13 @@ public class TestUtils {
             }
             """;
 
+    public static final String defaultLabelCreateRequest = """
+            {
+                "name": "Default label"
+            }
+            """;
+
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -92,6 +100,10 @@ public class TestUtils {
         return regNewTask(defaultTaskCreateRequest);
     }
 
+    public ResultActions regDefaultLabel() throws Exception {
+        return regNewLabel(defaultLabelCreateRequest);
+    }
+
     public ResultActions regNewUser(final String userCreateJsonRequest) throws Exception {
         final MockHttpServletRequestBuilder request = post(USER_CONTROLLER_PATH)
                 .content(userCreateJsonRequest)
@@ -109,6 +121,12 @@ public class TestUtils {
     public ResultActions regNewTask(final String taskCreateJsonRequest) throws Exception {
         return getAuthorizedRequest(post(TASK_CONTROLLER_PATH)
                 .content(taskCreateJsonRequest)
+                .contentType(MediaType.APPLICATION_JSON));
+    }
+
+    public ResultActions regNewLabel(final String labelCreateJsonRequest) throws Exception {
+        return getAuthorizedRequest(post(LABEL_CONTROLLER_PATH)
+                .content(labelCreateJsonRequest)
                 .contentType(MediaType.APPLICATION_JSON));
     }
 

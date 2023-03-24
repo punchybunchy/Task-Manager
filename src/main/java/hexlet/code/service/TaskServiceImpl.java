@@ -1,10 +1,12 @@
 package hexlet.code.service;
 
 import hexlet.code.dto.TaskDto;
+import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
 import hexlet.code.repository.TaskRepository;
+import hexlet.code.service.interfaces.LabelService;
 import hexlet.code.service.interfaces.TaskService;
 import hexlet.code.service.interfaces.TaskStatusService;
 import hexlet.code.service.interfaces.UserService;
@@ -13,15 +15,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @AllArgsConstructor
 public class TaskServiceImpl implements TaskService {
-    private TaskRepository taskRepository;
-    private TaskStatusService taskStatusService;
-    private UserService userService;
+    private final TaskRepository taskRepository;
+    private final LabelService labelService;
+    private final TaskStatusService taskStatusService;
+    private final UserService userService;
 
 
     @Override
@@ -41,12 +47,13 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task updateTask(TaskDto taskDto, Long id) {
-        Task temporyTask = buildTask(taskDto);
+        Task temporaryTask = buildTask(taskDto);
         final Task task = taskRepository.findById(id).get();
-        task.setName(temporyTask.getName());
-        task.setDescription(temporyTask.getDescription());
-        task.setExecutor(temporyTask.getExecutor());
-        task.setTaskStatus(temporyTask.getTaskStatus());
+        task.setName(temporaryTask.getName());
+        task.setDescription(temporaryTask.getDescription());
+        task.setExecutor(temporaryTask.getExecutor());
+        task.setTaskStatus(temporaryTask.getTaskStatus());
+        task.setLabels(temporaryTask.getLabels());
         return taskRepository.save(task);
     }
 
@@ -58,8 +65,21 @@ public class TaskServiceImpl implements TaskService {
 
     private Task buildTask(TaskDto taskDto) {
         final User author = userService.getCurrentUser();
-        final User executor = userService.getUserById(taskDto.getExecutorId());
-        final TaskStatus status = taskStatusService.getStatus(taskDto.getTaskStatusId());
+        final User executor = Optional.ofNullable(taskDto.getExecutorId())
+                .map(userService::getUserById)
+                .orElse(null);
+
+        final TaskStatus status = Optional.ofNullable(taskDto.getTaskStatusId())
+                .map(taskStatusService::getStatus)
+                .orElse(null);
+
+
+        final Set<Label> labels = Optional.ofNullable(taskDto.getLabelIds())
+                .orElse(Set.of())
+                .stream()
+                .filter(Objects::nonNull)
+                .map(id -> labelService.getLabelById(id))
+                .collect(Collectors.toSet());
 
         return Task.builder()
                 .name(taskDto.getName())
@@ -67,6 +87,7 @@ public class TaskServiceImpl implements TaskService {
                 .taskStatus(status)
                 .author(author)
                 .executor(executor)
+                .labels(labels)
                 .build();
     }
 
