@@ -3,8 +3,15 @@ package hexlet.code.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
+import hexlet.code.dto.TaskDto;
+import hexlet.code.model.Label;
 import hexlet.code.model.Task;
+import hexlet.code.model.TaskStatus;
+import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
+import hexlet.code.repository.TaskStatusRepository;
+import hexlet.code.repository.UserRepository;
 import hexlet.code.utils.TestUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -17,8 +24,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
@@ -40,55 +50,60 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class TaskControllerTest {
 
     @Autowired
-    private TaskRepository taskRepository;
+    private TestUtils utils;
 
     @Autowired
-    private TestUtils utils;
+    private TaskRepository taskRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private TaskStatusRepository taskStatusRepository;
+    @Autowired
+    private LabelRepository labelRepository;
+
 
     private static final int sizeOfEmptyRepository = 0;
     private static final int sizeOfOneItemRepository = 1;
 
+    private static final String DEFAULT_TASK_TITLE = "Default task title";
+    private static final String DEFAULT_TASK_DESCRIPTION = "Default task description";
+
     @BeforeEach
-    public void prepareDefaultUserAndStatus() throws Exception {
+    void prepareDefaults() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus();
+        utils.regDefaultLabel();
     }
+
     @AfterEach
-    public void clear() {
+    void clear() {
         utils.tearDown();
     }
 
     @Test
-    public void createNewTask() throws Exception {
+    void createNewTask() throws Exception {
+        final TaskDto defaultTask = buildTaskDto();
         assertThat(taskRepository.count()).isEqualTo(sizeOfEmptyRepository);
 
         utils.getAuthorizedRequest(
                 post(TASK_CONTROLLER_PATH)
-                        .content(defaultTaskCreateRequest)
+                        .content(utils.asJson(defaultTask))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
         Assertions.assertThat(taskRepository.count()).isEqualTo(sizeOfOneItemRepository);
     }
 
-//    @Test
-//    public void createNewTaskUnauthorizedFails() throws Exception {
-//        utils.regDefaultUser();
-//        utils.regDefaultStatus();
-//        assertThat(taskRepository.count()).isEqualTo(sizeOfEmptyRepository);
-//
-//        final MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(TASK_CONTROLLER_PATH)
-//                        .content(defaultTaskCreateRequest)
-//                        .contentType(APPLICATION_JSON);
-//
-//        utils.perform(request).andExpect(status().isUnauthorized());
-//
-//    }
-
+    
     @Test
-    public void getTaskById() throws Exception {
-        utils.regDefaultTask();
-        final Task expectedTask = taskRepository.findAll().get(0);
+    void getTaskById() throws Exception {
+        final TaskDto defaultTask = buildTaskDto();
+        performAuthorizedTaskRequest(defaultTask);
+
+        final Task expectedTask = taskRepository.findAll().stream()
+                .filter(Objects::nonNull)
+                .findFirst()
+                .get();
 
         final var response = utils.getAuthorizedRequest(
                 get(TASK_CONTROLLER_PATH + ID, expectedTask.getId()))
@@ -103,9 +118,14 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void getTaskByIdFails() throws Exception {
-        utils.regDefaultTask();
-        final Task expectedTask = taskRepository.findAll().get(0);
+    void getTaskByIdFails() throws Exception {
+        final TaskDto defaultTask = buildTaskDto();
+        performAuthorizedTaskRequest(defaultTask);
+
+        final Task expectedTask = taskRepository.findAll().stream()
+                .filter(Objects::nonNull)
+                .findFirst()
+                .get();
 
         final var response = utils.getAuthorizedRequest(
                 get(TASK_CONTROLLER_PATH + ID, expectedTask.getId() + 1))
@@ -113,8 +133,10 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void getAllTasks() throws Exception {
-        utils.regDefaultTask();
+    void getAllTasks() throws Exception {
+        final TaskDto defaultTask = buildTaskDto();
+        performAuthorizedTaskRequest(defaultTask);
+
         final List<Task> expectedTasks = taskRepository.findAll();
 
         final var response = utils.getAuthorizedRequest(
@@ -129,24 +151,29 @@ public class TaskControllerTest {
         Assertions.assertThat(expectedTasks.get(0).getName()).isEqualTo(tasks.get(0).getName());
     }
 
+
     @Test
-    public void updateTask() throws Exception {
-        utils.regDefaultTask();
+    void updateTask() throws Exception {
+        final TaskDto defaultTask = buildTaskDto();
+        performAuthorizedTaskRequest(defaultTask);
 
-        final Long defaultTaskId = taskRepository.findAll().get(0).getId();
+        final Task expectedTask = taskRepository.findAll().stream()
+                .filter(Objects::nonNull)
+                .findFirst()
+                .get();
 
-        final String anotherTaskCreateRequest = """
+        final String updatedTaskRequest = String.format("""
             {
                 "name": "Another task",
                 "description": "Another task description",
-                "executorId": 1,
-                "taskStatusId": 1
+                "executorId": %d,
+                "taskStatusId": %d
             }
-            """;
+            """, defaultTask.getExecutorId(), defaultTask.getAuthorId());
 
         var response = utils.getAuthorizedRequest(
-                put(TASK_CONTROLLER_PATH + ID, defaultTaskId)
-                        .content(anotherTaskCreateRequest)
+                put(TASK_CONTROLLER_PATH + ID, expectedTask.getId())
+                        .content(updatedTaskRequest)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -156,12 +183,14 @@ public class TaskControllerTest {
 
         Assertions.assertThat(updatedTask.getName()).isEqualTo("Another task");
         Assertions.assertThat(updatedTask.getDescription()).isEqualTo("Another task description");
-        Assertions.assertThat(taskRepository.findById(defaultTaskId).get().getName()).isEqualTo("Another task");
+        Assertions.assertThat(taskRepository.findById(expectedTask.getId()).get().getName()).isEqualTo("Another task");
     }
 
+
     @Test
-    public void deleteTaskByOwner() throws Exception {
-        utils.regDefaultTask();
+    void deleteTaskByOwner() throws Exception {
+        final TaskDto defaultTask = buildTaskDto();
+        performAuthorizedTaskRequest(defaultTask);
         assertThat(taskRepository.count()).isEqualTo(sizeOfOneItemRepository);
 
         final Long defaultTaskId = taskRepository.findAll().get(0).getId();
@@ -173,9 +202,11 @@ public class TaskControllerTest {
         Assertions.assertThat(taskRepository.count()).isEqualTo(sizeOfEmptyRepository);
     }
 
+
     @Test
-    public void deleteTaskByNotOwnerFail() throws Exception {
-        utils.regDefaultTask();
+    void deleteTaskByNotOwnerFail() throws Exception {
+        final TaskDto defaultTask = buildTaskDto();
+        performAuthorizedTaskRequest(defaultTask);
         assertThat(taskRepository.count()).isEqualTo(sizeOfOneItemRepository);
 
         final Long defaultTaskId = taskRepository.findAll().get(0).getId();
@@ -185,5 +216,53 @@ public class TaskControllerTest {
         utils.getAuthorizedRequest(
                 delete(TASK_CONTROLLER_PATH + ID, defaultTaskId), newUserUsername)
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getFilteredRequest() throws Exception {
+        final TaskDto defaultTask = buildTaskDto();
+        performAuthorizedTaskRequest(defaultTask);
+
+        String queryRequest = String.format("/tasks?taskStatus=%d&executorId=%d&labels=%d",
+                defaultTask.getTaskStatusId(),
+                defaultTask.getExecutorId(),
+                defaultTask.getLabelIds().stream()
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .get());
+
+        final var response = utils.getAuthorizedRequest(
+                        get(queryRequest))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        final List<Task> tasks = fromJson(response.getContentAsString(), new TypeReference<>() {});
+        assertThat(tasks.get(0).getTaskStatus().getId()).isEqualTo(defaultTask.getTaskStatusId());
+        assertThat(tasks.get(0).getExecutor().getId()).isEqualTo(defaultTask.getExecutorId());
+
+
+    }
+
+    private TaskDto buildTaskDto() {
+
+        User defaultUser = userRepository.findAll().stream().filter(Objects::nonNull).findFirst().get();
+        TaskStatus defaultStatus = taskStatusRepository.findAll().stream().filter(Objects::nonNull).findFirst().get();
+        Label defaultLabel = labelRepository.findAll().stream().filter(Objects::nonNull).findFirst().get();
+        return  new TaskDto(
+                DEFAULT_TASK_TITLE,
+                DEFAULT_TASK_DESCRIPTION,
+                defaultUser.getId(),
+                defaultUser.getId(),
+                defaultStatus.getId(),
+                Set.of(defaultLabel.getId())
+        );
+    }
+
+    private ResultActions performAuthorizedTaskRequest(TaskDto taskDto) throws Exception {
+        return utils.getAuthorizedRequest(
+                post(TASK_CONTROLLER_PATH)
+                        .content(asJson(taskDto))
+                        .contentType(APPLICATION_JSON));
     }
 }

@@ -88,6 +88,7 @@ public class UserControllerTest {
     @Test
     public void getUserById() throws Exception {
         utils.regDefaultUser();
+
         final User expectedUser = userRepository.findAll().get(0);
 
         final var response = utils.getAuthorizedRequest(

@@ -2,8 +2,12 @@ package hexlet.code.utils;
 
 
 import hexlet.code.component.JWTHelper;
+import hexlet.code.dto.TaskDto;
+import hexlet.code.dto.UserDto;
 import hexlet.code.exceptionsHandler.UserNotFoundException;
 import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import org.springframework.http.MediaType;
@@ -74,18 +78,23 @@ public class TestUtils {
     private MockMvc mockMvc;
 
     @Autowired
+    private JWTHelper jwtHelper;
+    @Autowired
     private UserRepository userRepository;
-
     @Autowired
-    JWTHelper jwtHelper;
-
+    private TaskStatusRepository taskStatusRepository;
     @Autowired
-    TaskStatusRepository taskStatusRepository;
+    private LabelRepository labelRepository;
+    @Autowired
+    private TaskRepository taskRepository;
+
 
 
     public void tearDown() {
         userRepository.deleteAll();
         taskStatusRepository.deleteAll();
+        labelRepository.deleteAll();
+        taskRepository.deleteAll();
     }
 
     public ResultActions regDefaultUser() throws Exception {
@@ -93,42 +102,26 @@ public class TestUtils {
     }
 
     public ResultActions regDefaultStatus() throws Exception {
-        return regNewStatus(defaultStatusCreateRequest);
-    }
-
-    public ResultActions regDefaultTask() throws Exception {
-        return regNewTask(defaultTaskCreateRequest);
+        return regNewInstance(STATUS_CONTROLLER_PATH, defaultStatusCreateRequest);
     }
 
     public ResultActions regDefaultLabel() throws Exception {
-        return regNewLabel(defaultLabelCreateRequest);
+        return regNewInstance(LABEL_CONTROLLER_PATH, defaultLabelCreateRequest);
     }
 
     public ResultActions regNewUser(final String userCreateJsonRequest) throws Exception {
-        final MockHttpServletRequestBuilder request = post(USER_CONTROLLER_PATH)
+        return perform(post(USER_CONTROLLER_PATH)
                 .content(userCreateJsonRequest)
-                .contentType(MediaType.APPLICATION_JSON);
-        return perform(request);
-    }
-
-
-    public ResultActions regNewStatus(final String statusCreateJsonRequest) throws Exception {
-        return getAuthorizedRequest(post(STATUS_CONTROLLER_PATH)
-                .content(statusCreateJsonRequest)
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
-    public ResultActions regNewTask(final String taskCreateJsonRequest) throws Exception {
-        return getAuthorizedRequest(post(TASK_CONTROLLER_PATH)
-                .content(taskCreateJsonRequest)
+
+    public ResultActions regNewInstance(String path, String jsonRequest) throws Exception {
+        return getAuthorizedRequest(post(path)
+                .content(jsonRequest)
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
-    public ResultActions regNewLabel(final String labelCreateJsonRequest) throws Exception {
-        return getAuthorizedRequest(post(LABEL_CONTROLLER_PATH)
-                .content(labelCreateJsonRequest)
-                .contentType(MediaType.APPLICATION_JSON));
-    }
 
     //----
 
@@ -161,5 +154,8 @@ public class TestUtils {
         return MAPPER.readValue(json, to);
     }
 
+    public static String asJson(final Object object) throws JsonProcessingException {
+        return MAPPER.writeValueAsString(object);
+    }
 
 }

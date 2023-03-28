@@ -99,7 +99,7 @@ public class LabelControllerTest {
                 "name": "New label"
             }
             """;
-        utils.regNewLabel(newLabel);
+        utils.regNewInstance(LABEL_CONTROLLER_PATH, newLabel);
 
         assertThat(labelRepository.count()).isEqualTo(sizeOfOneItemRepository + sizeOfOneItemRepository);
 
