@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.querydsl.binding.QuerydslPredicate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -37,15 +36,28 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    @Operation(summary = "Get task by id")
-    @ApiResponses(@ApiResponse(responseCode = "200"))
+    @Operation(summary = "Get a task by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found the task",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Task.class)) }),
+            @ApiResponse(responseCode = "404", description = "Task not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = @Content)
+    })
     @GetMapping(path = ID)
-    public Task getTask(@PathVariable Long id) {
+    public Task getTask(
+            @Parameter(description = "id of a task to be searched")
+            @PathVariable Long id) {
         return taskService.getTaskById(id);
     }
 
     @Operation(summary = "Get all tasks")
-    @ApiResponses(@ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = Task.class))))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found the tasks",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Task.class)) }),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = @Content)
+    })
     @GetMapping(path = "")
     public List<Task> getTasks(
             @Parameter(hidden = true) @QuerydslPredicate(root = Task.class) Predicate predicate) {
@@ -53,7 +65,13 @@ public class TaskController {
     }
 
     @Operation(summary = "Create new task")
-    @ApiResponse(responseCode = "201", description = "Task has created")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description =  "Task is created",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Task.class)) }),
+            @ApiResponse(responseCode = "422", description = "Request contains invalid data", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = @Content)
+    })
     @ResponseStatus(CREATED)
     @PreAuthorize(AUTHORIZED_USERS_ONLY)
     @PostMapping(path = "")
@@ -61,19 +79,36 @@ public class TaskController {
         return taskService.createTask(taskDto);
     }
 
-    @Operation(summary = "Update task")
-    @ApiResponse(responseCode = "200", description = "Task has been updated")
+    @Operation(summary = "Update a task")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task is updated",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Task.class)) }),
+            @ApiResponse(responseCode = "422", description = "Request contains invalid data", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Task not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = @Content)
+    })
     @PreAuthorize(AUTHORIZED_USERS_ONLY)
     @PutMapping(path = ID)
-    public Task updateTask(@RequestBody @Valid TaskDto taskDto, @PathVariable Long id) {
+    public Task updateTask(
+            @RequestBody @Valid TaskDto taskDto,
+            @Parameter(description = "id of a task to be updated")
+            @PathVariable Long id) {
         return taskService.updateTask(taskDto, id);
     }
 
     @Operation(summary = "Delete task")
-    @ApiResponse(responseCode = "200", description = "Task has been deleted")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Task is deleted", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Task not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = @Content)
+    })
     @PreAuthorize(TASK_AUTHOR_ONLY)
     @DeleteMapping(path = ID)
-    public void deleteTask(@PathVariable Long id) {
+    public void deleteTask(
+            @Parameter(description = "id of a task to be deleted")
+            @PathVariable Long id) {
         taskService.deleteTask(id);
     }
 }

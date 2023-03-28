@@ -4,6 +4,7 @@ import hexlet.code.dto.UserDto;
 import hexlet.code.model.User;
 import hexlet.code.service.interfaces.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,40 +32,75 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "Create new user")
-    @ApiResponse(responseCode = "201", description = "User created")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "User is created",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)) }),
+            @ApiResponse(responseCode = "422", description = "Request contains invalid data", content = @Content)
+    })
     @ResponseStatus(CREATED)
     @PostMapping(path = "")
     public User registerNewUser(@RequestBody @Valid UserDto userDto) {
         return userService.createUser(userDto);
     }
 
-    @ApiResponses(@ApiResponse(responseCode = "200"))
+    @Operation(summary = "Get an user by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found the user",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)) }),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
     @GetMapping(path = ID)
-    public User getUser(@PathVariable long id) {
+    public User getUser(
+            @Parameter(description = "id of user to be searched")
+            @PathVariable long id) {
         return userService.getUserById(id);
     }
 
-    // Content используется для указания содержимого ответа
-    @ApiResponses(@ApiResponse(responseCode = "200", content =
-            // Указываем тип содержимого ответа
-    @Content(schema = @Schema(implementation = User.class))
-    ))
+    @Operation(summary = "Get all users")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Found the users",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)) }),
+    })
     @GetMapping(path = "")
     public List<User> getAll() {
         return userService.getAllUsers();
     }
 
+    @Operation(summary = "Update an user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User is updated",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = User.class)) }),
+            @ApiResponse(responseCode = "422", description = "Request contains invalid data", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content)
+    })
     @PutMapping(path = ID)
     @PreAuthorize(USER_OWNER_ONLY)
     public User updateUser(
             @RequestBody @Valid UserDto userDto,
+            @Parameter(description = "id of user to be updated")
             @PathVariable long id) {
         return userService.updateUser(userDto, id);
     }
 
+    @Operation(summary = "Delete an user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User is deleted", content = @Content),
+            @ApiResponse(responseCode = "422", description = "Request contains invalid data", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized request", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Access denied", content = @Content)
+    })
     @DeleteMapping(path = ID)
     @PreAuthorize(USER_OWNER_ONLY)
-    public void deleteUser(@PathVariable long id) {
+    public void deleteUser(
+            @Parameter(description = "id of user to be deleted")
+            @PathVariable long id) {
         userService.deleteUser(id);
     }
 }
