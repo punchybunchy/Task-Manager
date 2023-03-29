@@ -3,7 +3,6 @@ package hexlet.code;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import hexlet.code.exceptionsHandler.UserNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -52,12 +51,6 @@ public class BaseExceptionHandler {
     @ResponseStatus(UNPROCESSABLE_ENTITY)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public String validationExceptionsHandler(DataIntegrityViolationException exception) {
-        return exception.getCause().getMessage();
-    }
-
-    @ResponseStatus(UNPROCESSABLE_ENTITY)
-    @ExceptionHandler(UserNotFoundException.class)
-    public String userNotFoundExceptionHandler(UserNotFoundException exception) {
         return exception.getCause().getMessage();
     }
 

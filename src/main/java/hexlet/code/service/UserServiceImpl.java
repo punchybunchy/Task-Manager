@@ -1,7 +1,6 @@
 package hexlet.code.service;
 
 import hexlet.code.dto.UserDto;
-import hexlet.code.exceptionsHandler.UserNotFoundException;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.service.interfaces.UserService;
@@ -32,7 +31,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     public User getUserById(long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found. Invalid user ID: " + id));
+                .orElseThrow();
     }
 
     @Override
@@ -54,8 +53,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public User updateUser(UserDto userDto, long id) {
-        final User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found. Invalid user ID: " + id));
+        final User user = userRepository.findById(id).orElseThrow();
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
@@ -68,8 +66,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void deleteUser(long id) {
-        final User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found. Invalid user ID: " + id));
+        final User user = userRepository.findById(id).orElseThrow();
         userRepository.delete(user);
     }
 

@@ -4,8 +4,8 @@ server:
 base-url: /api
 
 spring:
-#  active:
-#    profiles: dev
+  profiles:
+    active:  dev
 
   application:
     name: taskManager
@@ -22,3 +22,5 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+rollbar_token: c158e0e067304403b8cb5a4621ff83f7
