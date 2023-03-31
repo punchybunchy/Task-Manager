@@ -94,7 +94,6 @@ public class TaskControllerTest {
         Assertions.assertThat(taskRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
     }
 
-    
     @Test
     void getTaskById() throws Exception {
         final TaskDto defaultTask = buildTaskDto();

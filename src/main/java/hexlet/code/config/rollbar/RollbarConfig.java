@@ -15,14 +15,14 @@ import org.springframework.beans.factory.annotation.Value;
 })
 public class RollbarConfig {
     @Value("${rollbar_token}")
-    private String ROLLBAR_TOKEN;
+    private String rollbarToken;
 
     @Value("${spring.profiles.active:}")
     private String activeProfile;
 
     @Bean
     public Rollbar rollbar() {
-        return new Rollbar(getRollbarConfigs(ROLLBAR_TOKEN));
+        return new Rollbar(getRollbarConfigs(rollbarToken));
     }
 
     private Config getRollbarConfigs(String accessToken) {
@@ -33,6 +33,4 @@ public class RollbarConfig {
 //                .enabled(activeProfile == "prod")
                 .build();
     }
-
-
 }

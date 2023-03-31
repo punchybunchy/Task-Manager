@@ -12,7 +12,6 @@ import hexlet.code.service.interfaces.TaskService;
 import hexlet.code.service.interfaces.TaskStatusService;
 import hexlet.code.service.interfaces.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

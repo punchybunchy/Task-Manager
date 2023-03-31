@@ -20,7 +20,6 @@ import javax.validation.constraints.NotBlank;
 import java.util.Date;
 import java.util.Set;
 
-import static javax.persistence.GenerationType.AUTO;
 import static javax.persistence.GenerationType.IDENTITY;
 import static javax.persistence.TemporalType.TIMESTAMP;
 
@@ -46,7 +45,7 @@ public class Task {
     private TaskStatus taskStatus;
 
     @ManyToOne
-    @JoinColumn(name = "author_id", nullable=false)
+    @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
     @ManyToOne
@@ -60,7 +59,7 @@ public class Task {
     @ManyToMany
     private Set<Label> labels;
 
-    public Task (final Long id) {
+    public Task(final Long id) {
         this.id = id;
     }
 }

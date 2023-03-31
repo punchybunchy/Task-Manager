@@ -20,7 +20,6 @@ import javax.validation.constraints.NotBlank;
 import java.util.Date;
 import java.util.List;
 
-import static javax.persistence.GenerationType.AUTO;
 import static javax.persistence.GenerationType.IDENTITY;
 import static javax.persistence.TemporalType.TIMESTAMP;
 

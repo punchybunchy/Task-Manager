@@ -18,7 +18,6 @@ public class WelcomeController {
     @ApiResponse(responseCode = "200", description = "Welcome page")
     @GetMapping(path = "/welcome")
     public String root() {
-//        testing the rollbar 
 //        rollbar.debug("Here is sample debug message");
         return "Welcome to Spring";
     }

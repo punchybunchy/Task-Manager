@@ -39,10 +39,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 public class LabelControllerTest {
     @Autowired
-    LabelRepository labelRepository;
+    private LabelRepository labelRepository;
 
     @Autowired
-    TestUtils utils;
+    private TestUtils utils;
 
     @BeforeEach
     void prepareDefaultUserAndStatus() throws Exception {

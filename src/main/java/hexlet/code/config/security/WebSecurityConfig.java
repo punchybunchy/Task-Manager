@@ -105,5 +105,4 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // frame options has to be disabled explicitly, in order to get the H2 console working.
         http.headers().frameOptions().disable();
     }
-
 }
