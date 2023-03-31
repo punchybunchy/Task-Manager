@@ -76,8 +76,24 @@ dependencies {
 	)
 }
 
+// Настраиваем test coverage Jacoco так, чтобы отчет создавался всегда после тестов
 test {
 	useJUnitPlatform()
+}
+
+jacocoTestReport {
+	reports {
+		xml.required = true
+		html.required = true
+	}
+}
+
+test {
+	finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+	dependsOn test
 }
 
 // Настраиваем таску diffChangeLog таким образом,
