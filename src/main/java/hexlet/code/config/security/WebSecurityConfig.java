@@ -2,8 +2,8 @@ package hexlet.code.config.security;
 
 import hexlet.code.component.JWTHelper;
 import hexlet.code.filter.JwtAuthenticationFilter;
-import hexlet.code.filter.JwtAuthorizationFilter;
 
+import hexlet.code.filter.JwtAuthorizationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;

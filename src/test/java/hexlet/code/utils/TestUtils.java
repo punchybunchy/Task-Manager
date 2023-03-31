@@ -1,11 +1,6 @@
 package hexlet.code.utils;
 
-
 import hexlet.code.component.JWTHelper;
-import hexlet.code.dto.TaskDto;
-import hexlet.code.dto.UserDto;
-import hexlet.code.exceptionsHandler.UserNotFoundException;
-import hexlet.code.model.User;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
@@ -25,7 +20,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import java.util.Map;
 
 import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
-import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskStatusController.STATUS_CONTROLLER_PATH;
 import static hexlet.code.controller.UserController.USER_CONTROLLER_PATH;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -34,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @Component
 public class TestUtils {
-    public static final String defaultUserCreateRequest = """
+    public static final String DEFAULT_USER_CREATE_REQUEST = """
             {
                 "email": "ivan@google.com",
                 "firstName": "Ivan",
@@ -43,36 +37,29 @@ public class TestUtils {
             }
             """;
 
-    public static final String defaultUserLoginRequest = """
+    public static final String DEFAULT_USER_LOGIN_REQUEST = """
             {
                 "email": "ivan@google.com",
                 "password": "password"
             }
             """;
 
-    public static final String defaultUserUsername = "ivan@google.com";
+    public static final String DEFAULT_USER_USERNAME = "ivan@google.com";
 
-    public static final String defaultStatusCreateRequest = """
+    public static final String DEFAULT_STATUS_CREATE_REQUEST = """
             {
                 "name": "Default Status"
             }
             """;
 
-    public static final String defaultTaskCreateRequest = """
-            {
-                "name": "New task",
-                "description": "Task description",
-                "executorId": 1,
-                "taskStatusId": 1
-            }
-            """;
-
-    public static final String defaultLabelCreateRequest = """
+    public static final String DEFAULT_LABEL_CREATE_REQUEST = """
             {
                 "name": "Default label"
             }
             """;
 
+    public static final int SIZE_OF_EMPTY_REPOSITORY = 0;
+    public static final int SIZE_OF_ONE_ITEM_REPOSITORY = 1;
 
     @Autowired
     private MockMvc mockMvc;
@@ -98,41 +85,34 @@ public class TestUtils {
     }
 
     public ResultActions regDefaultUser() throws Exception {
-        return regNewUser(defaultUserCreateRequest);
+        return regNewInstance(USER_CONTROLLER_PATH, DEFAULT_USER_CREATE_REQUEST);
     }
 
     public ResultActions regDefaultStatus() throws Exception {
-        return regNewInstance(STATUS_CONTROLLER_PATH, defaultStatusCreateRequest);
+        return regNewInstance(STATUS_CONTROLLER_PATH, DEFAULT_STATUS_CREATE_REQUEST);
     }
 
     public ResultActions regDefaultLabel() throws Exception {
-        return regNewInstance(LABEL_CONTROLLER_PATH, defaultLabelCreateRequest);
+        return regNewInstance(LABEL_CONTROLLER_PATH, DEFAULT_LABEL_CREATE_REQUEST);
     }
-
-    public ResultActions regNewUser(final String userCreateJsonRequest) throws Exception {
-        return perform(post(USER_CONTROLLER_PATH)
-                .content(userCreateJsonRequest)
-                .contentType(MediaType.APPLICATION_JSON));
-    }
-
 
     public ResultActions regNewInstance(String path, String jsonRequest) throws Exception {
-        return getAuthorizedRequest(post(path)
+        return performAuthorizedRequest(post(path)
                 .content(jsonRequest)
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
-
     //----
 
-    public ResultActions getAuthorizedRequest(final MockHttpServletRequestBuilder request) throws Exception {
-        final String token = jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, defaultUserUsername));
+    public ResultActions performAuthorizedRequest(final MockHttpServletRequestBuilder request) throws Exception {
+        final String token = jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, DEFAULT_USER_USERNAME));
         request.header(AUTHORIZATION, token);
 
         return perform(request);
     }
 
-    public ResultActions getAuthorizedRequest(final MockHttpServletRequestBuilder request, String newUser) throws Exception {
+    public ResultActions performAuthorizedRequest(
+            final MockHttpServletRequestBuilder request, String newUser) throws Exception {
         final String token = jwtHelper.expiring(Map.of(SPRING_SECURITY_FORM_USERNAME_KEY, newUser));
         request.header(AUTHORIZATION, token);
 
@@ -157,5 +137,4 @@ public class TestUtils {
     public static String asJson(final Object object) throws JsonProcessingException {
         return MAPPER.writeValueAsString(object);
     }
-
 }

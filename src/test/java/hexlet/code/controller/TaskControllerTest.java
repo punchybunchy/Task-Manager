@@ -33,7 +33,10 @@ import java.util.Set;
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.controller.TaskController.TASK_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskController.ID;
-import static hexlet.code.utils.TestUtils.*;
+import static hexlet.code.utils.TestUtils.SIZE_OF_EMPTY_REPOSITORY;
+import static hexlet.code.utils.TestUtils.SIZE_OF_ONE_ITEM_REPOSITORY;
+import static hexlet.code.utils.TestUtils.asJson;
+import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -62,9 +65,6 @@ public class TaskControllerTest {
     private LabelRepository labelRepository;
 
 
-    private static final int sizeOfEmptyRepository = 0;
-    private static final int sizeOfOneItemRepository = 1;
-
     private static final String DEFAULT_TASK_TITLE = "Default task title";
     private static final String DEFAULT_TASK_DESCRIPTION = "Default task description";
 
@@ -83,15 +83,15 @@ public class TaskControllerTest {
     @Test
     void createNewTask() throws Exception {
         final TaskDto defaultTask = buildTaskDto();
-        assertThat(taskRepository.count()).isEqualTo(sizeOfEmptyRepository);
+        assertThat(taskRepository.count()).isEqualTo(SIZE_OF_EMPTY_REPOSITORY);
 
-        utils.getAuthorizedRequest(
+        utils.performAuthorizedRequest(
                 post(TASK_CONTROLLER_PATH)
                         .content(utils.asJson(defaultTask))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        Assertions.assertThat(taskRepository.count()).isEqualTo(sizeOfOneItemRepository);
+        Assertions.assertThat(taskRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
     }
 
     
@@ -105,13 +105,13 @@ public class TaskControllerTest {
                 .findFirst()
                 .get();
 
-        final var response = utils.getAuthorizedRequest(
+        final var response = utils.performAuthorizedRequest(
                 get(TASK_CONTROLLER_PATH + ID, expectedTask.getId()))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        final Task task = fromJson(response.getContentAsString(), new TypeReference<>() {});
+        final Task task = fromJson(response.getContentAsString(), new TypeReference<>() { });
 
         Assertions.assertThat(expectedTask.getId()).isEqualTo(task.getId());
         Assertions.assertThat(expectedTask.getName()).isEqualTo(task.getName());
@@ -127,7 +127,7 @@ public class TaskControllerTest {
                 .findFirst()
                 .get();
 
-        final var response = utils.getAuthorizedRequest(
+        final var response = utils.performAuthorizedRequest(
                 get(TASK_CONTROLLER_PATH + ID, expectedTask.getId() + 1))
                 .andExpect(status().isNotFound());
     }
@@ -139,15 +139,15 @@ public class TaskControllerTest {
 
         final List<Task> expectedTasks = taskRepository.findAll();
 
-        final var response = utils.getAuthorizedRequest(
+        final var response = utils.performAuthorizedRequest(
                 get(TASK_CONTROLLER_PATH))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        final List<Task> tasks = fromJson(response.getContentAsString(), new TypeReference<>() {});
+        final List<Task> tasks = fromJson(response.getContentAsString(), new TypeReference<>() { });
 
-        Assertions.assertThat(tasks).hasSize(sizeOfOneItemRepository);
+        Assertions.assertThat(tasks).hasSize(SIZE_OF_ONE_ITEM_REPOSITORY);
         Assertions.assertThat(expectedTasks.get(0).getName()).isEqualTo(tasks.get(0).getName());
     }
 
@@ -171,7 +171,7 @@ public class TaskControllerTest {
             }
             """, defaultTask.getExecutorId(), defaultTask.getAuthorId());
 
-        var response = utils.getAuthorizedRequest(
+        var response = utils.performAuthorizedRequest(
                 put(TASK_CONTROLLER_PATH + ID, expectedTask.getId())
                         .content(updatedTaskRequest)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -179,7 +179,7 @@ public class TaskControllerTest {
                 .andReturn()
                 .getResponse();
 
-        Task updatedTask = fromJson(response.getContentAsString(), new TypeReference<>() {});
+        Task updatedTask = fromJson(response.getContentAsString(), new TypeReference<>() { });
 
         Assertions.assertThat(updatedTask.getName()).isEqualTo("Another task");
         Assertions.assertThat(updatedTask.getDescription()).isEqualTo("Another task description");
@@ -191,15 +191,15 @@ public class TaskControllerTest {
     void deleteTaskByOwner() throws Exception {
         final TaskDto defaultTask = buildTaskDto();
         performAuthorizedTaskRequest(defaultTask);
-        assertThat(taskRepository.count()).isEqualTo(sizeOfOneItemRepository);
+        assertThat(taskRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
 
         final Long defaultTaskId = taskRepository.findAll().get(0).getId();
 
-        utils.getAuthorizedRequest(
+        utils.performAuthorizedRequest(
                 delete(TASK_CONTROLLER_PATH + ID, defaultTaskId))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(taskRepository.count()).isEqualTo(sizeOfEmptyRepository);
+        Assertions.assertThat(taskRepository.count()).isEqualTo(SIZE_OF_EMPTY_REPOSITORY);
     }
 
 
@@ -207,13 +207,13 @@ public class TaskControllerTest {
     void deleteTaskByNotOwnerFail() throws Exception {
         final TaskDto defaultTask = buildTaskDto();
         performAuthorizedTaskRequest(defaultTask);
-        assertThat(taskRepository.count()).isEqualTo(sizeOfOneItemRepository);
+        assertThat(taskRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
 
         final Long defaultTaskId = taskRepository.findAll().get(0).getId();
 
         String newUserUsername = "IAmNewUser";
 
-        utils.getAuthorizedRequest(
+        utils.performAuthorizedRequest(
                 delete(TASK_CONTROLLER_PATH + ID, defaultTaskId), newUserUsername)
                 .andExpect(status().isForbidden());
     }
@@ -231,13 +231,13 @@ public class TaskControllerTest {
                         .findFirst()
                         .get());
 
-        final var response = utils.getAuthorizedRequest(
+        final var response = utils.performAuthorizedRequest(
                         get(queryRequest))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        final List<Task> tasks = fromJson(response.getContentAsString(), new TypeReference<>() {});
+        final List<Task> tasks = fromJson(response.getContentAsString(), new TypeReference<>() { });
         assertThat(tasks.get(0).getTaskStatus().getId()).isEqualTo(defaultTask.getTaskStatusId());
         assertThat(tasks.get(0).getExecutor().getId()).isEqualTo(defaultTask.getExecutorId());
 
@@ -260,7 +260,7 @@ public class TaskControllerTest {
     }
 
     private ResultActions performAuthorizedTaskRequest(TaskDto taskDto) throws Exception {
-        return utils.getAuthorizedRequest(
+        return utils.performAuthorizedRequest(
                 post(TASK_CONTROLLER_PATH)
                         .content(asJson(taskDto))
                         .contentType(APPLICATION_JSON));

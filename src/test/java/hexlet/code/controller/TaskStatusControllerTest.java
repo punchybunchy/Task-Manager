@@ -46,35 +46,31 @@ public class TaskStatusControllerTest {
         utils.tearDown();
     }
 
-    private static final int sizeOfEmptyRepository = 0;
-    private static final int sizeOfOneItemRepository = 1;
-
-
     @Test
-    public void createNewTaskStatus() throws Exception {
+    void createNewTaskStatus() throws Exception {
         utils.regDefaultUser();
-        assertThat(taskStatusRepository.count()).isEqualTo(sizeOfEmptyRepository);
-        utils.getAuthorizedRequest(
+        assertThat(taskStatusRepository.count()).isEqualTo(SIZE_OF_EMPTY_REPOSITORY);
+        utils.performAuthorizedRequest(
                 post(STATUS_CONTROLLER_PATH)
-                        .content(defaultStatusCreateRequest)
+                        .content(DEFAULT_STATUS_CREATE_REQUEST)
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isCreated());
-        assertThat(taskStatusRepository.count()).isEqualTo(sizeOfOneItemRepository);
+        assertThat(taskStatusRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
     }
 
     @Test
-    public void getStatusById() throws Exception {
+    void getStatusById() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus();
         final TaskStatus expectedStatus = taskStatusRepository.findAll().get(0);
 
-        final var response = utils.getAuthorizedRequest(
+        final var response = utils.performAuthorizedRequest(
                 get(STATUS_CONTROLLER_PATH + ID, expectedStatus.getId()))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        final TaskStatus taskStatus = fromJson(response.getContentAsString(), new TypeReference<>() {});
+        final TaskStatus taskStatus = fromJson(response.getContentAsString(), new TypeReference<>() { });
 
         assertThat(expectedStatus.getId()).isEqualTo(taskStatus.getId());
         assertThat(expectedStatus.getName()).isEqualTo(taskStatus.getName());
@@ -82,33 +78,33 @@ public class TaskStatusControllerTest {
     }
 
     @Test
-    public void getStatusByIdFails() throws Exception {
+    void getStatusByIdFails() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus();
         final TaskStatus expectedStatus = taskStatusRepository.findAll().get(0);
 
-        final var response = utils.getAuthorizedRequest(
+        final var response = utils.performAuthorizedRequest(
                 get(STATUS_CONTROLLER_PATH + ID, expectedStatus.getId() + 1))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    public void getAllStatuses() throws Exception {
+    void getAllStatuses() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus();
-        final var response = utils.getAuthorizedRequest(
+        final var response = utils.performAuthorizedRequest(
                 get(STATUS_CONTROLLER_PATH))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        final List<TaskStatus> taskStatuses = fromJson(response.getContentAsString(), new TypeReference<>() {});
+        final List<TaskStatus> taskStatuses = fromJson(response.getContentAsString(), new TypeReference<>() { });
 
-        assertThat(taskStatuses).hasSize(sizeOfOneItemRepository);
+        assertThat(taskStatuses).hasSize(SIZE_OF_ONE_ITEM_REPOSITORY);
     }
 
     @Test
-    public void updateStatus() throws Exception {
+    void updateStatus() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus();
         final String statusUpdateJsonRequest = """
@@ -119,7 +115,7 @@ public class TaskStatusControllerTest {
 
         final Long statusId = taskStatusRepository.findByName("Default Status").get().getId();
 
-        utils.getAuthorizedRequest(
+        utils.performAuthorizedRequest(
                 put(STATUS_CONTROLLER_PATH + ID, statusId)
                         .content(statusUpdateJsonRequest)
                         .contentType(APPLICATION_JSON)
@@ -131,17 +127,16 @@ public class TaskStatusControllerTest {
     }
 
     @Test
-    public void deleteStatus() throws Exception {
+    void deleteStatus() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus();
 
         final Long statusId = taskStatusRepository.findByName("Default Status").get().getId();
 
-        utils.getAuthorizedRequest(
+        utils.performAuthorizedRequest(
                 delete(STATUS_CONTROLLER_PATH + ID, statusId))
                 .andExpect(status().isOk());
 
-        assertThat(taskStatusRepository.count()).isEqualTo(sizeOfEmptyRepository);
+        assertThat(taskStatusRepository.count()).isEqualTo(SIZE_OF_EMPTY_REPOSITORY);
     }
-
 }
