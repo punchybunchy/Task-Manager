@@ -57,7 +57,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         user.setEmail(userDto.getEmail());
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
-        String password = userDto.getPassword();
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         userRepository.save(user);
 
@@ -86,10 +85,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     public User getCurrentUser() {
-        return userRepository.findByEmail(getCurrentUsername()).get();
-    };
+        return userRepository.findByEmail(getCurrentUsername())
+                .orElseThrow();
+    }
     private String getCurrentUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
-    };
+    }
 
 }

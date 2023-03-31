@@ -18,7 +18,8 @@ public class TaskStatusServiceImpl implements TaskStatusService {
 
     @Override
     public TaskStatus getStatus(long id) {
-        return taskStatusRepository.findById(id).get();
+        return taskStatusRepository.findById(id)
+                .orElseThrow();
     }
 
     @Override

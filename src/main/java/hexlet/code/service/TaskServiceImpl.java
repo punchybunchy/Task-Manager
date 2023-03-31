@@ -33,7 +33,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public Task getTaskById(Long id) {
-        return taskRepository.findById(id).get();
+        return taskRepository.findById(id)
+                .orElseThrow();
     }
 
     @Override
@@ -49,7 +50,8 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public Task updateTask(TaskDto taskDto, Long id) {
         Task temporaryTask = buildTask(taskDto);
-        final Task task = taskRepository.findById(id).get();
+        final Task task = taskRepository.findById(id)
+                .orElseThrow();
         task.setName(temporaryTask.getName());
         task.setDescription(temporaryTask.getDescription());
         task.setExecutor(temporaryTask.getExecutor());
@@ -60,7 +62,8 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void deleteTask(Long id) {
-        final Task task = taskRepository.findById(id).get();
+        final Task task = taskRepository.findById(id)
+                .orElseThrow();
         taskRepository.delete(task);
     }
 
@@ -79,7 +82,7 @@ public class TaskServiceImpl implements TaskService {
                 .orElse(Set.of())
                 .stream()
                 .filter(Objects::nonNull)
-                .map(id -> labelService.getLabelById(id))
+                .map(labelService::getLabelById)
                 .collect(Collectors.toSet());
 
         return Task.builder()
