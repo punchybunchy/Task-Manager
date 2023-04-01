@@ -2,6 +2,7 @@ package hexlet.code.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
+import hexlet.code.dto.LabelDto;
 import hexlet.code.model.Label;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.utils.TestUtils;
@@ -20,9 +21,9 @@ import java.util.List;
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
 import static hexlet.code.controller.TaskStatusController.ID;
-import static hexlet.code.utils.TestUtils.DEFAULT_LABEL_CREATE_REQUEST;
 import static hexlet.code.utils.TestUtils.SIZE_OF_EMPTY_REPOSITORY;
 import static hexlet.code.utils.TestUtils.SIZE_OF_ONE_ITEM_REPOSITORY;
+import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -55,24 +56,26 @@ public class LabelControllerTest {
     }
 
     @Test
-    void regNewLabel() throws Exception {
+    void testRegNewLabel() throws Exception {
 
         assertThat(labelRepository.count()).isEqualTo(SIZE_OF_EMPTY_REPOSITORY);
+
+        LabelDto defaultLabelDto = new LabelDto("Default label");
 
         var response = utils.performAuthorizedRequest(
                 post(LABEL_CONTROLLER_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(DEFAULT_LABEL_CREATE_REQUEST))
+                        .content(asJson(defaultLabelDto)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse();
 
-        final Label label = TestUtils.fromJson(response.getContentAsString(), new TypeReference<Label>() { });
-        assertThat(label.getName()).isEqualTo("Default label");
+        final Label label = TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() { });
+        assertThat(label.getName()).isEqualTo(defaultLabelDto.getName());
         assertThat(labelRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
     }
 
     @Test
-    void getLabel() throws Exception {
+    void testGetLabel() throws Exception {
         utils.regDefaultLabel();
         final Label expectedLabel = labelRepository.findAll().get(0);
 
@@ -89,18 +92,15 @@ public class LabelControllerTest {
     }
 
     @Test
-    void getAllLabels() throws Exception {
+    void testGetAllLabels() throws Exception {
         utils.regDefaultLabel();
         assertThat(labelRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
 
-        final String newLabel = """
-            {
-                "name": "New label"
-            }
-            """;
+        LabelDto newLabel = new LabelDto("New label");
         utils.regNewInstance(LABEL_CONTROLLER_PATH, newLabel);
 
-        assertThat(labelRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY + SIZE_OF_ONE_ITEM_REPOSITORY);
+        assertThat(labelRepository.count()).isEqualTo(
+                SIZE_OF_ONE_ITEM_REPOSITORY + SIZE_OF_ONE_ITEM_REPOSITORY);
 
         final var response = utils.performAuthorizedRequest(
                         get(LABEL_CONTROLLER_PATH))
@@ -115,38 +115,34 @@ public class LabelControllerTest {
     }
 
     @Test
-    void updateLabel() throws Exception {
+    void testUpdateLabel() throws Exception {
         utils.regDefaultLabel();
-        final String labelUpdateJsonRequest = """
-            {
-                "name": "Updated label"
-            }
-            """;
+        LabelDto updatedLabel = new LabelDto("Updated label");
 
         final Long labelId = labelRepository.findAll().get(0).getId();
 
         var response = utils.performAuthorizedRequest(
                 put(LABEL_CONTROLLER_PATH + ID, labelId)
-                        .content(labelUpdateJsonRequest)
+                        .content(asJson(updatedLabel))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
 
-        Label updatedLabel = fromJson(response.getContentAsString(), new TypeReference<>() { });
+        Label label = fromJson(response.getContentAsString(), new TypeReference<>() { });
 
-        Assertions.assertThat(updatedLabel.getName()).isEqualTo("Updated label");
+        Assertions.assertThat(label.getName()).isEqualTo(updatedLabel.getName());
     }
 
     @Test
-    void deleteLabel() throws Exception {
+    void testDeleteLabel() throws Exception {
         utils.regDefaultLabel();
         assertThat(labelRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
 
         final Long defaultLabelId = labelRepository.findAll().get(0).getId();
 
         utils.performAuthorizedRequest(
-                        delete(LABEL_CONTROLLER_PATH + ID, defaultLabelId))
+                delete(LABEL_CONTROLLER_PATH + ID, defaultLabelId))
                 .andExpect(status().isOk());
 
         Assertions.assertThat(labelRepository.count()).isEqualTo(SIZE_OF_EMPTY_REPOSITORY);

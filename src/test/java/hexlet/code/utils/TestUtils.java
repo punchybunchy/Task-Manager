@@ -1,6 +1,9 @@
 package hexlet.code.utils;
 
 import hexlet.code.component.JWTHelper;
+import hexlet.code.dto.LabelDto;
+import hexlet.code.dto.TaskStatusDto;
+import hexlet.code.dto.UserDto;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
@@ -28,35 +31,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @Component
 public class TestUtils {
-    public static final String DEFAULT_USER_CREATE_REQUEST = """
-            {
-                "email": "ivan@google.com",
-                "firstName": "Ivan",
-                "lastName": "Petrov",
-                "password": "password"
-            }
-            """;
 
-    public static final String DEFAULT_USER_LOGIN_REQUEST = """
-            {
-                "email": "ivan@google.com",
-                "password": "password"
-            }
-            """;
+    private UserDto defaultUser = new UserDto(
+            DEFAULT_USER_USERNAME,
+            "Ivan",
+            "Petrov",
+            "password");
+
+    private TaskStatusDto defaultStatus = new TaskStatusDto("Default Status");
+
+    private LabelDto defaultLabel = new LabelDto("Default label");
 
     public static final String DEFAULT_USER_USERNAME = "ivan@google.com";
-
-    public static final String DEFAULT_STATUS_CREATE_REQUEST = """
-            {
-                "name": "Default Status"
-            }
-            """;
-
-    public static final String DEFAULT_LABEL_CREATE_REQUEST = """
-            {
-                "name": "Default label"
-            }
-            """;
+    public static final String ANOTHER_USER_USERNAME = "john@google.com";
 
     public static final int SIZE_OF_EMPTY_REPOSITORY = 0;
     public static final int SIZE_OF_ONE_ITEM_REPOSITORY = 1;
@@ -85,20 +72,20 @@ public class TestUtils {
     }
 
     public ResultActions regDefaultUser() throws Exception {
-        return regNewInstance(USER_CONTROLLER_PATH, DEFAULT_USER_CREATE_REQUEST);
+        return regNewInstance(USER_CONTROLLER_PATH, defaultUser);
     }
 
     public ResultActions regDefaultStatus() throws Exception {
-        return regNewInstance(STATUS_CONTROLLER_PATH, DEFAULT_STATUS_CREATE_REQUEST);
+        return regNewInstance(STATUS_CONTROLLER_PATH, defaultStatus);
     }
 
     public ResultActions regDefaultLabel() throws Exception {
-        return regNewInstance(LABEL_CONTROLLER_PATH, DEFAULT_LABEL_CREATE_REQUEST);
+        return regNewInstance(LABEL_CONTROLLER_PATH, defaultLabel);
     }
 
-    public ResultActions regNewInstance(String path, String jsonRequest) throws Exception {
+    public ResultActions regNewInstance(String path, Object userDto) throws Exception {
         return performAuthorizedRequest(post(path)
-                .content(jsonRequest)
+                .content(asJson(userDto))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 

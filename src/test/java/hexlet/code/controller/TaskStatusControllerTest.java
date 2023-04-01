@@ -2,6 +2,7 @@ package hexlet.code.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
+import hexlet.code.dto.TaskStatusDto;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.utils.TestUtils;
@@ -17,9 +18,9 @@ import java.util.List;
 import static hexlet.code.config.SpringConfigForIT.TEST_PROFILE;
 import static hexlet.code.controller.TaskStatusController.ID;
 import static hexlet.code.controller.TaskStatusController.STATUS_CONTROLLER_PATH;
-import static hexlet.code.utils.TestUtils.DEFAULT_STATUS_CREATE_REQUEST;
 import static hexlet.code.utils.TestUtils.SIZE_OF_EMPTY_REPOSITORY;
 import static hexlet.code.utils.TestUtils.SIZE_OF_ONE_ITEM_REPOSITORY;
+import static hexlet.code.utils.TestUtils.asJson;
 import static hexlet.code.utils.TestUtils.fromJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -50,19 +51,25 @@ public class TaskStatusControllerTest {
     }
 
     @Test
-    void createNewTaskStatus() throws Exception {
+    void testRegNewStatus() throws Exception {
         utils.regDefaultUser();
         assertThat(taskStatusRepository.count()).isEqualTo(SIZE_OF_EMPTY_REPOSITORY);
-        utils.performAuthorizedRequest(
+        TaskStatusDto statusDto = new TaskStatusDto("Default status");
+        var response = utils.performAuthorizedRequest(
                 post(STATUS_CONTROLLER_PATH)
-                        .content(DEFAULT_STATUS_CREATE_REQUEST)
+                        .content(asJson(statusDto))
                         .contentType(APPLICATION_JSON))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
+
+        final TaskStatus status = TestUtils.fromJson(response.getContentAsString(), new TypeReference<>() { });
+
         assertThat(taskStatusRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
+        assertThat(status.getName()).isEqualTo(statusDto.getName());
     }
 
     @Test
-    void getStatusById() throws Exception {
+    void testGetStatusById() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus();
         final TaskStatus expectedStatus = taskStatusRepository.findAll().get(0);
@@ -81,7 +88,7 @@ public class TaskStatusControllerTest {
     }
 
     @Test
-    void getStatusByIdFails() throws Exception {
+    void testGetStatusByIdFails() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus();
         final TaskStatus expectedStatus = taskStatusRepository.findAll().get(0);
@@ -92,7 +99,7 @@ public class TaskStatusControllerTest {
     }
 
     @Test
-    void getAllStatuses() throws Exception {
+    void testGetAllStatuses() throws Exception {
         utils.regDefaultUser();
         utils.regDefaultStatus();
         final var response = utils.performAuthorizedRequest(
@@ -102,39 +109,41 @@ public class TaskStatusControllerTest {
                 .getResponse();
 
         final List<TaskStatus> taskStatuses = fromJson(response.getContentAsString(), new TypeReference<>() { });
-
         assertThat(taskStatuses).hasSize(SIZE_OF_ONE_ITEM_REPOSITORY);
     }
 
     @Test
-    void updateStatus() throws Exception {
+    void testUpdateStatus() throws Exception {
         utils.regDefaultUser();
-        utils.regDefaultStatus();
-        final String statusUpdateJsonRequest = """
-            {
-                "name": "New Status"
-            }
-            """;
+        var response = utils.regDefaultStatus()
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
 
-        final Long statusId = taskStatusRepository.findByName("Default Status").get().getId();
+        final TaskStatus oldStatus = fromJson(response.getContentAsString(), new TypeReference<>() { });
+        final Long statusId = oldStatus.getId();
+
+        TaskStatusDto newStatus = new TaskStatusDto("New Status");
 
         utils.performAuthorizedRequest(
                 put(STATUS_CONTROLLER_PATH + ID, statusId)
-                        .content(statusUpdateJsonRequest)
-                        .contentType(APPLICATION_JSON)
-        ).andExpect(status().isOk());
+                        .content(asJson(newStatus))
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
 
         assertThat(taskStatusRepository.existsById(statusId)).isTrue();
-        assertNull(taskStatusRepository.findByName("Default Status").orElse(null));
-        assertNotNull(taskStatusRepository.findByName("New Status").orElse(null));
+        assertNull(taskStatusRepository.findByName(oldStatus.getName()).orElse(null));
+        assertNotNull(taskStatusRepository.findByName(newStatus.getName()).orElse(null));
     }
 
     @Test
-    void deleteStatus() throws Exception {
+    void testDeleteStatus() throws Exception {
         utils.regDefaultUser();
-        utils.regDefaultStatus();
+        var response = utils.regDefaultStatus()
+                .andExpect(status().isCreated())
+                .andReturn().getResponse();
 
-        final Long statusId = taskStatusRepository.findByName("Default Status").get().getId();
+        final TaskStatus status = fromJson(response.getContentAsString(), new TypeReference<>() { });
+        final Long statusId = status.getId();
 
         utils.performAuthorizedRequest(
                 delete(STATUS_CONTROLLER_PATH + ID, statusId))

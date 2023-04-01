@@ -26,6 +26,11 @@ repositories {
 	mavenCentral()
 }
 
+wrapper {
+	gradleVersion = '7.4'
+	distributionType = Wrapper.DistributionType.ALL
+}
+
 compileJava {
 	options.release = 17
 	options.encoding = 'UTF-8'

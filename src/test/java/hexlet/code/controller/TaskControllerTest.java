@@ -1,6 +1,5 @@
 package hexlet.code.controller;
 
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.config.SpringConfigForIT;
 import hexlet.code.dto.TaskDto;
@@ -152,27 +151,25 @@ public class TaskControllerTest {
 
 
     @Test
-    void updateTask() throws Exception {
-        final TaskDto defaultTask = buildTaskDto();
-        performAuthorizedTaskRequest(defaultTask);
+    void testUpdateTask() throws Exception {
+        TaskDto taskDto = buildTaskDto();
+        performAuthorizedTaskRequest(taskDto);
 
-        final Task expectedTask = taskRepository.findAll().stream()
+        final Task defaultTask = taskRepository.findAll().stream()
                 .filter(Objects::nonNull)
                 .findFirst()
                 .get();
 
-        final String updatedTaskRequest = String.format("""
-            {
-                "name": "Another task",
-                "description": "Another task description",
-                "executorId": %d,
-                "taskStatusId": %d
-            }
-            """, defaultTask.getExecutorId(), defaultTask.getAuthorId());
+        Long taskId = defaultTask.getId();
+        String oldTaskName = defaultTask.getName();
+
+        taskDto.setName("Updated task title");
+        taskDto.setDescription("Updated task description");
+
 
         var response = utils.performAuthorizedRequest(
-                put(TASK_CONTROLLER_PATH + ID, expectedTask.getId())
-                        .content(updatedTaskRequest)
+                put(TASK_CONTROLLER_PATH + ID, taskId)
+                        .content(asJson(taskDto))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn()
@@ -180,14 +177,16 @@ public class TaskControllerTest {
 
         Task updatedTask = fromJson(response.getContentAsString(), new TypeReference<>() { });
 
-        Assertions.assertThat(updatedTask.getName()).isEqualTo("Another task");
-        Assertions.assertThat(updatedTask.getDescription()).isEqualTo("Another task description");
-        Assertions.assertThat(taskRepository.findById(expectedTask.getId()).get().getName()).isEqualTo("Another task");
+        assertThat(taskRepository.existsById(taskId)).isTrue();
+        assertThat(taskRepository.findById(taskId).get().getName()).isNotEqualTo(oldTaskName);
+        assertThat(taskRepository.findById(taskId).get().getName()).isEqualTo(updatedTask.getName());
+        assertThat(taskRepository.findById(taskId).get().getDescription()).isEqualTo(updatedTask.getDescription());
+
     }
 
 
     @Test
-    void deleteTaskByOwner() throws Exception {
+    void testDeleteTaskByOwner() throws Exception {
         final TaskDto defaultTask = buildTaskDto();
         performAuthorizedTaskRequest(defaultTask);
         assertThat(taskRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
@@ -203,7 +202,7 @@ public class TaskControllerTest {
 
 
     @Test
-    void deleteTaskByNotOwnerFail() throws Exception {
+    void testDeleteTaskByNotOwnerFail() throws Exception {
         final TaskDto defaultTask = buildTaskDto();
         performAuthorizedTaskRequest(defaultTask);
         assertThat(taskRepository.count()).isEqualTo(SIZE_OF_ONE_ITEM_REPOSITORY);
@@ -218,7 +217,7 @@ public class TaskControllerTest {
     }
 
     @Test
-    void getFilteredRequest() throws Exception {
+    void testGetFilteredRequest() throws Exception {
         final TaskDto defaultTask = buildTaskDto();
         performAuthorizedTaskRequest(defaultTask);
 
@@ -239,8 +238,6 @@ public class TaskControllerTest {
         final List<Task> tasks = fromJson(response.getContentAsString(), new TypeReference<>() { });
         assertThat(tasks.get(0).getTaskStatus().getId()).isEqualTo(defaultTask.getTaskStatusId());
         assertThat(tasks.get(0).getExecutor().getId()).isEqualTo(defaultTask.getExecutorId());
-
-
     }
 
     private TaskDto buildTaskDto() {

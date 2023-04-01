@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 import static hexlet.code.controller.LabelController.LABEL_CONTROLLER_PATH;
@@ -74,7 +75,7 @@ public class LabelController {
     @ResponseStatus(CREATED)
     @PreAuthorize(AUTHORIZED_USERS_ONLY)
     @PostMapping(path = "")
-    public Label regLabel(@RequestBody LabelDto labelDto) {
+    public Label regLabel(@RequestBody @Valid LabelDto labelDto) {
         return labelService.createLabel(labelDto);
     }
 
@@ -90,7 +91,7 @@ public class LabelController {
     @PreAuthorize(AUTHORIZED_USERS_ONLY)
     @PutMapping(path = ID)
     public Label updateLabel(
-            @RequestBody LabelDto labelDto,
+            @RequestBody @Valid LabelDto labelDto,
             @Parameter(description = "id of a label to be updated")
             @PathVariable Long id) {
         return labelService.updateLabel(labelDto, id);
