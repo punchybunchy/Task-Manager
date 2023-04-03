@@ -37,7 +37,7 @@ public class TaskStatusController {
 
     private static final String AUTHORIZED_USERS_ONLY = "isAuthenticated()";
     private static final String NOT_BOUND_WITH_TASKS_ONLY = """
-        @taskStatusRepository.findById(#id).get().getTasks().size() == 0
+        @taskStatusRepository.findById(#id).get().getTasks().size() == 0 && isAuthenticated()
         """;
 
     private final TaskStatusService taskStatusService;
