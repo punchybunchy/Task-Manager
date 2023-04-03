@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -43,7 +42,7 @@ public class TaskStatus {
     private Date createdAt;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "taskStatus", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "taskStatus")
     private List<Task> tasks;
 
     public TaskStatus(final Long id) {

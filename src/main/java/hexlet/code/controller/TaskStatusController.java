@@ -36,6 +36,9 @@ public class TaskStatusController {
     public static final String ID = "/{id}";
 
     private static final String AUTHORIZED_USERS_ONLY = "isAuthenticated()";
+    private static final String NOT_BOUND_WITH_TASKS_ONLY = """
+        @taskStatusRepository.findById(#id).get().getTasks().size() == 0 && isAuthenticated()
+        """;
 
     private final TaskStatusService taskStatusService;
 
@@ -107,12 +110,10 @@ public class TaskStatusController {
             @ApiResponse(responseCode = "403", description = "Access denied", content = @Content)
     })
     @DeleteMapping(path = ID)
-    @PreAuthorize(AUTHORIZED_USERS_ONLY)
+    @PreAuthorize(NOT_BOUND_WITH_TASKS_ONLY)
     public void deleteTaskStatus(
             @Parameter(description = "id of task status to be deleted")
             @PathVariable Long id) {
         taskStatusService.deleteStatus(id);
     }
-
-
 }
