@@ -5,7 +5,7 @@ base-url: /api
 
 spring:
   profiles:
-    active:  dev
+    active:  prod
 
   application:
     name: taskManager
