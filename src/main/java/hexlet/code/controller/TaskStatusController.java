@@ -1,6 +1,7 @@
 package hexlet.code.controller;
 
 import hexlet.code.dto.TaskStatusDto;
+import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.service.interfaces.TaskStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 import static hexlet.code.controller.TaskStatusController.STATUS_CONTROLLER_PATH;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -112,8 +114,8 @@ public class TaskStatusController {
     public void deleteTaskStatus(
             @Parameter(description = "id of task status to be deleted")
             @PathVariable Long id) {
-        TaskStatus status = taskStatusService.getStatus(id);
-        if (status.getTasks().isEmpty()) {
+        Optional<List<Task>> tasks = Optional.ofNullable(taskStatusService.getStatus(id).getTasks());
+        if (tasks.get().isEmpty()) {
             taskStatusService.deleteStatus(id);
         } else {
             throw new AccessDeniedException("Status cannot be deleted while used in one or more tasks");
