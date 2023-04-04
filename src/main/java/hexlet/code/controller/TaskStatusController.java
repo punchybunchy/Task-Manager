@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,9 +37,6 @@ public class TaskStatusController {
     public static final String ID = "/{id}";
 
     private static final String AUTHORIZED_USERS_ONLY = "isAuthenticated()";
-    private static final String NOT_BOUND_WITH_TASKS_ONLY = """
-        @taskStatusRepository.findById(#id).get().getTasks().size() == 0 && isAuthenticated()
-        """;
 
     private final TaskStatusService taskStatusService;
 
@@ -110,10 +108,15 @@ public class TaskStatusController {
             @ApiResponse(responseCode = "403", description = "Access denied", content = @Content)
     })
     @DeleteMapping(path = ID)
-    @PreAuthorize(NOT_BOUND_WITH_TASKS_ONLY)
+    @PreAuthorize(AUTHORIZED_USERS_ONLY)
     public void deleteTaskStatus(
             @Parameter(description = "id of task status to be deleted")
             @PathVariable Long id) {
-        taskStatusService.deleteStatus(id);
+        int amountOfBoundTasks = taskStatusService.getStatus(id).getTasks().size();
+        if (amountOfBoundTasks != 0) {
+            throw new AccessDeniedException("Status cannot be deleted while used in one or more tasks");
+        } else {
+            taskStatusService.deleteStatus(id);
+        }
     }
 }
