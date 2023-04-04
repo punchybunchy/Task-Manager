@@ -112,11 +112,11 @@ public class TaskStatusController {
     public void deleteTaskStatus(
             @Parameter(description = "id of task status to be deleted")
             @PathVariable Long id) {
-        int amountOfBoundTasks = taskStatusService.getStatus(id).getTasks().size();
-        if (amountOfBoundTasks != 0) {
-            throw new AccessDeniedException("Status cannot be deleted while used in one or more tasks");
-        } else {
+        TaskStatus status = taskStatusService.getStatus(id);
+        if (status.getTasks().isEmpty()) {
             taskStatusService.deleteStatus(id);
+        } else {
+            throw new AccessDeniedException("Status cannot be deleted while used in one or more tasks");
         }
     }
 }
