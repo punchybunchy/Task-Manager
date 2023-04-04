@@ -2,13 +2,10 @@ package hexlet.code.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
-import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.validation.constraints.NotBlank;
@@ -19,7 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
-import static javax.persistence.GenerationType.IDENTITY;
+import static javax.persistence.GenerationType.AUTO;
 import static javax.persistence.TemporalType.TIMESTAMP;
 
 
@@ -32,7 +29,7 @@ import static javax.persistence.TemporalType.TIMESTAMP;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue(strategy = AUTO)
     private Long id;
 
     @Column(unique = true)
@@ -53,16 +50,7 @@ public class User {
     @Temporal(TIMESTAMP)
     private Date createdAt;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
-    private List<Task> taskAuthors;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "executor", cascade = CascadeType.ALL)
-    private List<Task> taskExecutors;
-
     public User(final Long id) {
         this.id = id;
     }
-
 }

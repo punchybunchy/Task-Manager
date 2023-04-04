@@ -65,10 +65,10 @@ public class TestUtils {
 
 
     public void tearDown() {
+        taskRepository.deleteAll();
         userRepository.deleteAll();
         taskStatusRepository.deleteAll();
         labelRepository.deleteAll();
-        taskRepository.deleteAll();
     }
 
     public ResultActions regDefaultUser() throws Exception {
