@@ -1,4 +1,4 @@
-# Task Manager
+# Task Manager app
 Task Manager allows to set tasks, assign performers and change their statuses.\
 This is a demo of the [Task Manager](https://task-manager-project.up.railway.app) web application.
 
